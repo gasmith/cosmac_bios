@@ -43,69 +43,70 @@ tx_setup_q:
   smi   1
   bnz   tx_setup_q
 
-  ; Adjust the delay constant for 12 instructions in the PLL.
+  ; Adjust the delay constant for 10 instructions in the PLL.
   ghi   r9
-  smi   6
+  smi   5
   phi   r9
 
 tx_loop:
-  ; Load the next byte into ra.0.
-  ldxa
-  plo   ra
+  ; Load the next byte into ra.1.
+  ldxa              ; 5
+  phi   ra          ; 6
 
-  ; Setup ra.1 as a bit counter. There are 8 bits, but we intend to using df=1
-  ; to detect completion.
-  ldi   7
-  phi   ra
+  ; Setup ra.0 to count bits.
+  ldi   8           ; 7
+  plo   ra          ; 8
 
-  ; Start bit. Since we're only using six instructions here (between req and the
-  ; next req/seq), bump the delay constant by 3.
-  req
-  ghi   r9        ; 1
-  adi   3         ; 2
+  ; Start bit.
+  ghi   r9          ; 9
+  sex   r8          ; 10 (padding)
+  req               ; 1
+  br    tx_delay    ; 2
+
+  ; Decrement ra.0. Load the saved byte from ra.1, and shift the least
+  ; significant bit into DF. Load the delay constant from r9.1.
+tx_next_bit:
+  dec   ra          ; 5
+  ghi   ra          ; 6
+  shr               ; 7
+  phi   ra          ; 8
+  ghi   r9          ; 9
+
+  ; Either set or reset Q, based on DF.
+  bnf   tx_zero     ; 10
+  seq               ; 1
+  br    tx_delay    ; 2
+tx_zero:
+  req               ; 1
+  sex   r8          ; 2 (padding)
 
   ; Hold bit.
 tx_delay:
   smi   1
   bnz   tx_delay
 
-  ; Load the saved byte from ra.0, and shift the least significant bit into DF.
-  glo   ra        ; 3
-  shrc            ; 4
-  plo   ra        ; 5
+  glo   ra          ; 3
+  bnz   tx_next_bit ; 4
 
-  ; Either set or reset Q, based on DF.
-  bnf   tx_zero   ; 6
-  seq             ; 7
-  br    tx_bit    ; 8
-tx_zero:
-  req             ; 7
-  req             ; 8 (padding for br tx_bit above)
-
-  ; Decrement the ra.1 bit counter, and reload the delay constant from r9.1 for
-  ; the next iteration of the loop. When the bit counter wraps (and df=1), we're
-  ; done.
-tx_bit:
-  ghi   ra        ; 9
-  smi   1         ; 10
-  phi   ra        ; 11
-  ghi   r9        ; 12
-  sex   r8        ; 1  (padding for 12-instr PLL)
-  bnf   tx_delay  ; 2
+  ; Load delay constant
+  ghi   r9          ; 5
+  sex   r8          ; 6 (padding)
+  sex   r8          ; 7 (padding)
+  sex   r8          ; 8 (padding)
+  sex   r8          ; 9 (padding)
+  sex   r8          ; 10 (padding)
 
   ; Stop bit. Since we're only using two instructions, bump the delay constant
   ; by 5.
-  seq
-  ghi   r9        ; 1
-  adi   5         ; 2
+  seq               ; 1
 tx_stop:
   smi   1
   bnz   tx_stop
   
   ; If there's more to do, send the next byte.
-  dec   r9
-  glo   r9
-  bnz   tx_loop
+  dec   r9          ; 2
+  glo   r9          ; 3
+  bnz   tx_loop     ; 4
   br    done
 
 done:
