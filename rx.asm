@@ -9,7 +9,7 @@
   plo   r9
 
   ; Delay constant
-  ldi   8
+  ldi   13
   phi   r9
 
 ; rx:
@@ -19,17 +19,24 @@
 ;
 ;   baud  r9.1
 ;   ----  ----
-;   9600     8
-;   4800    21
-;   2400    47
-;   1200   100
+;   9600    13
+;   4800    26
+;   2400    52
+;   1200   105
 ;
-; The delay constant is a multiplier for an 8us delay loop, which accommodates
-; an additional 10 4us instructions in each iteration of the phase-locked loop.
+; The delay constant can be derived for arbitrary baud rates as 1e6/(8 * rate).
+;
+; This subroutine modifies both r8 and r9.
 rx:
   ; Return immediately if there's nothing to do.
   glo   r9
   bz    done
+
+  ; Adjust the delay constant for 10 instructions in the PLL. We only need 8,
+  ; but we're doing an extra iteration of the delay loop to set DF.
+  ghi   r9
+  smi   5
+  phi   r9
 
 rx_loop:
   ; Initialize the target byte as 0xff. We'll shift the start bit (0), and each
@@ -62,9 +69,9 @@ rx_delay:
 
   ; Test EF3. If it's high, leave df=1. Otherwise, subtract to set df=0. Use
   ; `skp`, to keep the loop timing the same on either side of the branch.
-  bn3   rx_is0      ; 2
+  bn3   rx_zero     ; 2
   skp               ; 3
-rx_is0:
+rx_zero:
   sm                ; 3
 
   ; Load the in-progress byte from memory, shift right with DF, and write it
