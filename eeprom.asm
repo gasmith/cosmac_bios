@@ -2,11 +2,69 @@
 .op "CALL","W","D4 H1 L1"
 .op "RETF","","D5"
 
-#define R_SP      r2
+; Convenience macros for moving words around.
+.op "MOV","NR","8$2 A$1 9$2 B$1"
+.op "MOV","NW","F8 L2 A$1 F8 H2 B$1"
 
+; The push & pop macros presume `sex R_SP`.
+.op "PUSH","N","8$1 73 9$1 73"
+.op "POP","N","60 72 B$1 F0 A$1"
+
+; Reserved registers, from the 1802 programming guide, which recommends the use
+; of registers 2-6 as part of the "Standard call and return technique" (SCRT).
+; The chip is hard-coded to use r0 for DMA, and r1 for the interrupt service
+; routine.
+#define R_DMA     r0
+#define R_ISR     r1
+#define R_SP      r2
+#define R_PC      r3
+#define R_CALL    r4
+#define R_RETF    r5
+#define R_RA      r6
+
+; RAM code page where stack is located.
+#define STACK_PAGE  07fh
+
+; EEPROM constants
+#define EEPROM_BASE       08000h
 #define EEPROM_PAGE_SIZE  64
 #define EEPROM_PAGE_MASK  63
 
+  ; Entrypoint
+  mov   R_RA, main
+  lbr   init_stack
+
+#define IMAGE_BASE  00100h
+#define IMAGE_SIZE  0008ah
+
+; Sample program to write to eeprom.
+main:
+  mov   r8, IMAGE_BASE
+  mov   r9, EEPROM_BASE
+  mov   ra, IMAGE_SIZE
+  call  write_eeprom
+
+  mov   r8, IMAGE_BASE
+  mov   r9, IMAGE_SIZE
+  call  checksum
+  sex   R_SP
+  glo   rf
+  stxd
+  out   1
+  irx
+
+  mov   r8, EEPROM_BASE
+  mov   r9, IMAGE_SIZE
+  call  checksum
+  sex   R_SP
+  glo   rf
+  stxd
+  out   2
+  irx
+
+  idl
+
+  org   IMAGE_BASE
 ; write_eeprom: Writes data to an AT28C EEPROM.
 ;
 ; Arguments:
@@ -64,11 +122,10 @@ write_eeprom_aligned:
   ; the stack, subtract sb.0, store the result in ra.0, and pop the stack.
   sex   R_SP
   glo   ra
-  stxd
+  str   R_SP
   glo   rb
   sd        ; ra.0 - rb.0
   plo   ra
-  irx
 
   ; If df=1, then also decrement ra.1.
   bnf   write_eeprom_call
@@ -96,7 +153,7 @@ write_eeprom_call:
 ; must equal (r9 + rb.0) & 0xffc0. The caller is responsible for making this
 ; guarantee.
 ;
-; This call blocks until the write is complete. The nominal write cycle time 
+; This call blocks until the write is complete. The nominal write cycle time
 ; for this device is 10ms.
 ;
 ; At the end of the routine, r8 and r9 point at the next byte to be copied.
@@ -126,3 +183,94 @@ write_eeprom_page_wait:
   inc   r8
   inc   r9
   retf
+
+; checksum: Performs a simple single-byte XOR checksum.
+;
+; Arguments:
+;   r8    rw  Address.
+;   r9    rw  Length.
+;
+; Returns:
+;   rf.0    Checksum.
+checksum:
+  ldi   0
+  plo   rf
+  sex   r8
+checksum_loop:
+  glo   rf
+  xor
+  plo   rf
+  irx
+  dec   r9
+  ghi   r9
+  bnz   checksum_loop
+  glo   r9
+  bnz   checksum_loop
+  retf
+
+; init_stack: Set up stack registers and make the initial call to `R_RA`.
+init_stack:
+  ; Set stack pointer.
+  ldi   STACK_PAGE
+  phi   R_SP
+  ldi   0ffh
+  plo   R_SP
+
+  ; Poison the last return address on the stack: if the main entrypoint attempts
+  ; a retf, jump into an idle loop. Note that words are stored in big-endian
+  ; order.
+  sex   R_SP
+  ldi   idle.0
+  stxd
+  ldi   idle.1
+  stxd
+
+  ; Set PCs for call & ret helpers.
+  mov   R_CALL, call
+  mov   R_RETF, retf
+
+  ; Do the initial "return" to `start`.
+  sep   R_RETF
+
+; idle: An eternal idle loop.
+idle:
+  idl
+
+; call: Function call trampoline.
+;
+; Invoked with `sep R_CALL, dw <addr>`, or the `call <addr>` macro. Note the
+; wraparound `br call-1` to restore `R_CALL` after each invocation.
+  sep   R_PC
+call:
+  ; Save previous return address to the stack.
+  sex   R_SP
+  push  R_RA
+
+  ; Copy R_PC to R_RA.
+  mov   R_RA, R_PC
+
+  ; Load the big-endian address into R_PC, and incr R_RA as we go.
+  lda   R_RA
+  phi   R_PC
+  lda   R_RA
+  plo   R_PC
+
+  ; Jump to new R_PC.
+  br    call-1
+
+; retf: Function return trampoline.
+;
+; Named `retf` to avoid confusion with the 1802 `ret` operation. Invoked with
+; `sep R_RETF`, or the `retf` macro. Note the wraparound `br retf-1` to restore
+; `R_RETF` after each invocation.
+  sep   R_PC
+retf:
+  ; Copy R_RA to R_PC.
+  mov   R_PC, R_RA
+
+  ; Restore previous big-endian R_RA from the stack.
+  sex   R_SP
+  pop   R_RA
+
+  ; Jump to new R_PC.
+  br    retf-1

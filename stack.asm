@@ -25,7 +25,7 @@
 ; RAM code page where stack is located.
 #define STACK_PAGE  07fh
 
-; Entrypoint
+  ; Entrypoint
   mov   R_RA, main
   br    init_stack
 
@@ -52,10 +52,7 @@ bar:
   out   3
   retf
 
-; -- init_stack
-; 
-; Configure stack registers and "return" to the address of the main entrypoint
-; in R_RA.
+; init_stack: Set up stack registers and make the initial call to `R_RA`.
 init_stack:
   ; Set stack pointer.
   ldi   STACK_PAGE
@@ -79,17 +76,14 @@ init_stack:
   ; Do the initial "return" to `start`.
   sep   R_RETF
 
-; -- idle
-;
-; An eternal idle loop.
+; idle: An eternal idle loop.
 idle:
   idl
 
-; -- call
+; call: Function call trampoline.
 ;
-; Function call helper. Invoked with `sep R_CALL, dw <addr>`, or the `call
-; <addr>` macro. Note the wraparound `br call-1` to restore `R_CALL` after each
-; invocation.
+; Invoked with `sep R_CALL, dw <addr>`, or the `call <addr>` macro. Note the
+; wraparound `br call-1` to restore `R_CALL` after each invocation.
   sep   R_PC
 call:
   ; Save previous return address to the stack.
@@ -108,11 +102,11 @@ call:
   ; Jump to new R_PC.
   br    call-1
 
-; -- retf
+; retf: Function return trampoline.
 ;
-; Function return helper. Named `retf` to avoid confusion with the 1802 `ret`
-; operation. Invoked with `sep R_RETF`, or the `retf` macro. Note the wraparound
-; `br retf-1` to restore `R_RETF` after each invocation.
+; Named `retf` to avoid confusion with the 1802 `ret` operation. Invoked with
+; `sep R_RETF`, or the `retf` macro. Note the wraparound `br retf-1` to restore
+; `R_RETF` after each invocation.
   sep   R_PC
 retf:
   ; Copy R_RA to R_PC.
