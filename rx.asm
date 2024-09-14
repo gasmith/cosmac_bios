@@ -12,10 +12,15 @@
   ldi   13
   phi   r9
 
-; rx:
+; rx: Bit-banged 8n1 receive.
 ;
-; Big-banged 8n1 receive. Reads r9.0 bytes from EF3 into the buffer at r8. The
-; baud rate is specifed with a delay constant specified in r9.1:
+; Arguments:
+;   r8    rw  Buffer address
+;   r9.0  rw  Buffer length
+;   r9.1  rw  Delay constant
+;
+; Reads data from EF3 into the buffer. The baud rate is specified with a delay
+; constant, which is defined as 1e6/(8 * baud):
 ;
 ;   baud  r9.1
 ;   ----  ----
@@ -24,9 +29,6 @@
 ;   2400    52
 ;   1200   105
 ;
-; The delay constant can be derived for arbitrary baud rates as 1e6/(8 * rate).
-;
-; This subroutine modifies both r8 and r9.
 rx:
   ; Return immediately if there's nothing to do.
   glo   r9
