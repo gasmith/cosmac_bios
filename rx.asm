@@ -34,10 +34,9 @@ rx:
   glo   r9
   bz    done
 
-  ; Adjust the delay constant for 10 instructions in the PLL. We only need 8,
-  ; but we're doing an extra iteration of the delay loop to set DF.
+  ; Adjust the delay constant for 8 instructions in the PLL.
   ghi   r9
-  smi   5
+  smi   4
   phi   r9
 
 rx_loop:
@@ -54,7 +53,7 @@ rx_loop:
 
   ; Wait for EF3 to go low, signalling the edge of the start bit.
 rx_start:
-  b3    rx_start
+  bn3   rx_start
 
   ; Load delay constant. Skip this step on the first iteration, where we only
   ; want to wait for half of the usual delay (see above).
@@ -62,19 +61,17 @@ rx_start:
 rx_next_bit:
   ghi   r9          ; 1
 
-  ; Decrement until we wrap to 0xff with df=1. Since we're performing one extra
-  ; iteration of the delay loop, we can only have 8 other instructions in the
-  ; phase-locked loop. These are numbered to the side.
+  ; Delay loop. Sets df=1 (indicating "no borrow").
 rx_delay:
   smi   1
-  bnf   rx_delay
+  bnz   rx_delay
 
-  ; Test EF3. If it's high, leave df=1. Otherwise, subtract to set df=0. Use
+  ; Test EF3. If it's high, leave df=1. Otherwise, add to set df=0. Use
   ; `skp`, to keep the loop timing the same on either side of the branch.
-  bn3   rx_zero     ; 2
+  b3   rx_zero      ; 2
   skp               ; 3
 rx_zero:
-  sm                ; 3
+  add               ; 3
 
   ; Load the in-progress byte from memory, shift right with DF, and write it
   ; back to memory. If DF is zero after the shift, that's the start bit, which

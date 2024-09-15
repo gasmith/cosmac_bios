@@ -10,9 +10,9 @@ setup:
   ldi   0
   plo   r8
 
-  ; Delay constant for 9600 baud is 13 2-instr cycles. We'll use 10 instructions
-  ; for the PLL, so (13 - 10/2) = 8.
-  ldi   8
+  ; Delay constant for 9600 baud is 13 2-instr cycles. We'll use 8 instructions
+  ; for the PLL, so (13 - (8 / 2)) = 9.
+  ldi   9
   phi   r9
 
 rx_loop:
@@ -29,7 +29,7 @@ rx_loop:
 
   ; Wait for EF3 to go low, signalling the edge of the start bit.
 rx_start:
-  b3    rx_start
+  bn3   rx_start
 
   ; Load delay constant. Skip this step on the first iteration, where we only
   ; want to wait for half of the usual delay (see above).
@@ -37,19 +37,17 @@ rx_start:
 rx_next_bit:
   ghi   r9          ; 1
 
-  ; Decrement until we wrap to 0xff with df=1. Since we're performing one extra
-  ; iteration of the delay loop, we can only have 8 other instructions in the
-  ; phase-locked loop. These are numbered to the side.
+  ; Delay loop. Sets df=1 (indicating "no borrow").
 rx_delay:
   smi   1
-  bnf   rx_delay
+  bnz   rx_delay
 
-  ; Test EF3. If it's high, leave df=1. Otherwise, subtract to set df=0. Use
+  ; Test EF3. If it's high, leave df=1. Otherwise, add to set df=0. Use
   ; `skp`, to keep the loop timing the same on either side of the branch.
-  bn3   rx_zero     ; 2
+  b3    rx_zero     ; 2
   skp               ; 3
 rx_zero:
-  sm                ; 3
+  add               ; 3
 
   ; Load the in-progress byte from memory, shift right with DF, and write it
   ; back to memory. If DF is zero after the shift, that's the start bit, which
@@ -60,10 +58,10 @@ rx_zero:
   sex   r8          ; 7 (no-op)
   bdf   rx_next_bit ; 8
 
-  ; Increment r8.
-  inc   r8
+  ; Show byte on display, and increment r8.
+  out   4
 
   ; Wait for EF3 to go high, signalling the stop bit.
 rx_stop:
-  bn3   rx_stop
+  b3    rx_stop
   br    rx_loop
