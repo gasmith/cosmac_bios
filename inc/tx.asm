@@ -1,17 +1,3 @@
-  ; Source address
-  ldi   2
-  phi   r8
-  ldi   0
-  plo   r8
-
-  ; Delay constant
-  ldi   13
-  phi   r9
-
-  ; Number of bytes to send.
-  ldi   4
-  plo   r9
-
 ; tx: Big-banged 8n1 transmit.
 ;
 ; Arguments:
@@ -32,7 +18,7 @@
 tx:
   ; Return immediately if there's nothing to do.
   glo   r9
-  bz    done
+  bz    tx_done
 
   ; Point X to the buffer.
   sex   r8
@@ -109,7 +95,6 @@ tx_stop:
   dec   r9          ; 2
   glo   r9          ; 3
   bnz   tx_loop     ; 4
-  br    done
 
-done:
-  idl
+tx_done:
+  retf

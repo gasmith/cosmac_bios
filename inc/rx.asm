@@ -1,17 +1,3 @@
-  ; Destination address
-  ldi   2
-  phi   r8
-  ldi   0
-  plo   r8
-
-  ; Number of bytes to receive.
-  ldi   4
-  plo   r9
-
-  ; Delay constant
-  ldi   13
-  phi   r9
-
 ; rx: Bit-banged 8n1 receive.
 ;
 ; Arguments:
@@ -32,7 +18,7 @@
 rx:
   ; Return immediately if there's nothing to do.
   glo   r9
-  bz    done
+  bz    rx_done
 
   ; Adjust the delay constant for 8 instructions in the PLL.
   ghi   r9
@@ -86,20 +72,13 @@ rx_zero:
   irx
   dec   r9
   glo   r9
-  bz    done
+  bz    rx_done
 
   ; If there are more bytes to receive, wait for EF3 to go high, signalling the
   ; stop bit. Then receive the next byte.
 rx_stop:
-  bn3   rx_stop 
+  b3    rx_stop 
   br    rx_loop
 
-done:
-  ldi   0
-  plo   r8
-  sex   r8
-  out   4
-  out   4
-  out   4
-  out   4
-  idl
+rx_done:
+  retf
