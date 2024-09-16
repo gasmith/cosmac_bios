@@ -37,36 +37,36 @@ write_eeprom_align:
   ; If it is not, figure out the maximum number of bytes we can write without
   ; crossing a page boundary. Store this value on the stack.
   sdi   EEPROM_PAGE_SIZE
+  str   R_SP
   sex   R_SP
-  stxd
 
   ; Now take min(rb.0, *sp), to figure out how many bytes we can write. If rb.0
   ; is the lesser or equal, df=1 and we can proceed. Otherwise, we need to clamp
   ; rb.0 down to *sp.
   glo   rb
   sd        ; max - rb.0
-  ldxa
   bdf   write_eeprom_aligned
+  ldx
   plo   rb
 
 write_eeprom_aligned:
   ; Subtract the number of bytes we're writing (rb.0) from the number of bytes
   ; remaining in the buffer (ra). This is a 16-bit subtraction. Store ra.0 on
-  ; the stack, subtract sb.0, store the result in ra.0, and pop the stack.
-  sex   R_SP
+  ; the stack, subtract sb.0, and store the result in ra.0.
   glo   ra
   str   R_SP
+  sex   R_SP
   glo   rb
   sd        ; ra.0 - rb.0
   plo   ra
 
-  ; If df=0, then also decrement ra.1.
+  ; If df=0, there was a borrow, so also decrement ra.1.
   bdf   write_eeprom_call
   ghi   ra
   smi   1
   phi   ra
 
-  ; Everything's ready to go, let's write!
+  ; Everything's ready to go, let's write a page!
 write_eeprom_call:
   call  write_eeprom_page
   br    write_eeprom
