@@ -1,7 +1,9 @@
 #include inc/header.asm
 
 #define IMAGE_BASE  00100h
-#define IMAGE_SIZE  00012h
+#define IMAGE_SIZE  00060h
+
+#define EEPROM_DEST 08030h
 
   ; Entrypoint
   mov   R_RA, main
@@ -10,7 +12,7 @@
 ; Sample program to write to eeprom.
 main:
   mov   r8, IMAGE_BASE
-  mov   r9, EEPROM_BASE
+  mov   r9, EEPROM_DEST 
   mov   ra, IMAGE_SIZE
   call  write_eeprom
 
@@ -27,7 +29,7 @@ main:
 wait1:
   bn4   wait1
 
-  mov   r8, EEPROM_BASE
+  mov   r8, EEPROM_DEST
   mov   r9, IMAGE_SIZE
   call  checksum
   glo   rf
@@ -40,7 +42,7 @@ wait1:
 wait2:
   bn4   wait2
 
-  call  08000h
+  call  EEPROM_DEST 
 
 #include inc/checksum.asm
 #include inc/eeprom.asm
