@@ -1,0 +1,11 @@
+#define BIOS_BASE 0ff00h
+f_init_stack:    equ  (BIOS_BASE+00h)
+f_cksum8:        equ  (BIOS_BASE+03h)
+f_cksum16:       equ  (BIOS_BASE+06h)
+f_write_eeprom:  equ  (BIOS_BASE+09h)
+f_rx8:           equ  (BIOS_BASE+0ch)
+f_rx16:          equ  (BIOS_BASE+0fh)
+f_tx8:           equ  (BIOS_BASE+02h)
+f_tx16:          equ  (BIOS_BASE+05h)
+f_tx16_str:      equ  (BIOS_BASE+08h)
+f_strlen:        equ  (BIOS_BASE+0bh)

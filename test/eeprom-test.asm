@@ -18,7 +18,7 @@ main:
 
   mov   r8, IMAGE_BASE
   mov   r9, IMAGE_SIZE
-  call  checksum
+  call  cksum8
   glo   rf
   str   R_SP
   sex   R_SP
@@ -31,7 +31,7 @@ wait1:
 
   mov   r8, EEPROM_DEST
   mov   r9, IMAGE_SIZE
-  call  checksum
+  call  cksum8
   glo   rf
   str   R_SP
   sex   R_SP
@@ -44,7 +44,7 @@ wait2:
 
   call  EEPROM_DEST 
 
-#include inc/checksum.asm
+#include inc/cksum.asm
 #include inc/eeprom.asm
 #include inc/stack.asm
 

@@ -17,7 +17,7 @@ main:
   ldi   13
   phi   r9
 
-  call  rx
+  call  rx8
 
   ldi   0
   plo   r8

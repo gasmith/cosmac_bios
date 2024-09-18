@@ -17,7 +17,7 @@ main:
   ldi   4
   plo   r9
 
-  call  tx
+  call  tx8
 
 #include inc/stack.asm
 #include inc/tx.asm

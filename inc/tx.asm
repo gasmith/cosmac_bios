@@ -1,4 +1,4 @@
-; tx: Big-banged 8n1 transmit.
+; tx8: Big-banged 8n1 transmit.
 ;
 ; Arguments:
 ;   r8    rw  Buffer address
@@ -15,86 +15,127 @@
 ;   2400    52
 ;   1200   105
 ;
-tx:
+tx8:
   ; Return immediately if there's nothing to do.
   glo   r9
-  bz    tx_done
+  bz    tx8_done
 
   ; Point X to the buffer.
   sex   r8
 
   ; If Q is not already high, bring it high and wait.
-  bq    tx_loop
+  bq    tx8_loop
   seq
   ghi   r9
-tx_setup_q:
+tx8_setup_q:
   smi   1
-  bnz   tx_setup_q
+  bnz   tx8_setup_q
 
   ; Adjust the delay constant for 10 instructions in the PLL.
   ghi   r9
   smi   5
   phi   r9
 
-tx_loop:
+tx8_loop:
   ; Load the next byte into ra.1.
-  ldxa              ; 5
-  phi   ra          ; 6
+  ldxa                ; 5
+  phi   ra            ; 6
 
   ; Setup ra.0 to count bits.
-  ldi   8           ; 7
-  plo   ra          ; 8
+  ldi   8             ; 7
+  plo   ra            ; 8
 
   ; Start bit.
-  ghi   r9          ; 9
-  sex   r8          ; 10 (padding)
-  req               ; 1
-  br    tx_delay    ; 2
+  ghi   r9            ; 9
+  sex   r8            ; 10 (padding)
+  req                 ; 1
+  br    tx8_delay     ; 2
 
   ; Decrement ra.0. Load the saved byte from ra.1, and shift the least
   ; significant bit into DF. Load the delay constant from r9.1.
-tx_next_bit:
-  dec   ra          ; 5
-  ghi   ra          ; 6
-  shr               ; 7
-  phi   ra          ; 8
-  ghi   r9          ; 9
+tx8_next_bit:
+  dec   ra            ; 5
+  ghi   ra            ; 6
+  shr                 ; 7
+  phi   ra            ; 8
+  ghi   r9            ; 9
 
   ; Either set or reset Q, based on DF.
-  bnf   tx_zero     ; 10
-  seq               ; 1
-  br    tx_delay    ; 2
-tx_zero:
-  req               ; 1
-  sex   r8          ; 2 (padding)
+  bnf   tx8_zero      ; 10
+  seq                 ; 1
+  br    tx8_delay     ; 2
+tx8_zero:
+  req                 ; 1
+  sex   r8            ; 2 (padding)
 
   ; Hold bit.
-tx_delay:
+tx8_delay:
   smi   1
-  bnz   tx_delay
+  bnz   tx8_delay
 
-  glo   ra          ; 3
-  bnz   tx_next_bit ; 4
+  glo   ra            ; 3
+  bnz   tx8_next_bit  ; 4
 
   ; Load delay constant
-  ghi   r9          ; 5
-  sex   r8          ; 6 (padding)
-  sex   r8          ; 7 (padding)
-  sex   r8          ; 8 (padding)
-  sex   r8          ; 9 (padding)
-  sex   r8          ; 10 (padding)
+  ghi   r9            ; 5
+  sex   r8            ; 6 (padding)
+  sex   r8            ; 7 (padding)
+  sex   r8            ; 8 (padding)
+  sex   r8            ; 9 (padding)
+  sex   r8            ; 10 (padding)
 
   ; Stop bit. Since we're only using two instructions, bump the delay constant
   ; by 5.
-  seq               ; 1
-tx_stop:
+  seq                 ; 1
+tx8_stop:
   smi   1
-  bnz   tx_stop
+  bnz   tx8_stop
   
   ; If there's more to do, send the next byte.
-  dec   r9          ; 2
-  glo   r9          ; 3
-  bnz   tx_loop     ; 4
+  dec   r9            ; 2
+  glo   r9            ; 3
+  bnz   tx8_loop      ; 4
 
-tx_done:
+tx8_done:
   retf
+
+; tx16: Bit-banged 8n1 transmit for more than 255 bytes.
+;
+; Arguments:
+;   r8    rw  Buffer address
+;   r9.1  rw  Delay constant
+;   ra    rw  Buffer length
+;
+; See tx for more details.
+;
+tx16:
+  ; If there's more than 255, send 255.
+  ldi   0ffh
+  plo   r9
+  ghi   ra
+  bnz   tx16_adjust_ra
+
+  ; If there's less than 256, send that.
+  glo   ra
+  plo   r9
+  bnz   tx16_adjust_ra
+  retf
+
+tx16_adjust_ra:
+  ; Store length on the stack.
+  sex   R_SP
+  str   R_SP
+  glo   ra
+  sm        ; ra.0 - r9.0
+  plo   ra
+
+  ; If df=0, there was a borrow, so also decrement ra.1.
+  bdf   tx16_tx 
+  ghi   ra
+  smi   1
+  phi   ra
+
+tx16_tx:
+  ; Send this chunk, and loop for the next.
+  call  tx8
+  br    tx16
