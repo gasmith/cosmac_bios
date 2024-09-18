@@ -23,14 +23,15 @@ tx8:
   ; Point X to the buffer.
   sex   r8
 
-  ; If Q is not already high, bring it high and wait.
-  bq    tx8_loop
-  seq
+  ; If Q is not already low, bring it low and wait.
+  bnq   tx8_adjust_delay
+  req
   ghi   r9
 tx8_setup_q:
   smi   1
   bnz   tx8_setup_q
 
+tx8_adjust_delay:
   ; Adjust the delay constant for 10 instructions in the PLL.
   ghi   r9
   smi   5
@@ -62,10 +63,10 @@ tx8_next_bit:
 
   ; Either set or reset Q, based on DF.
   bnf   tx8_zero      ; 10
-  seq                 ; 1
+  req                 ; 1
   br    tx8_delay     ; 2
 tx8_zero:
-  req                 ; 1
+  seq                 ; 1
   sex   r8            ; 2 (padding)
 
   ; Hold bit.
@@ -84,9 +85,8 @@ tx8_delay:
   sex   r8            ; 9 (padding)
   sex   r8            ; 10 (padding)
 
-  ; Stop bit. Since we're only using two instructions, bump the delay constant
-  ; by 5.
-  seq                 ; 1
+  ; Stop bit.
+  req                 ; 1
 tx8_stop:
   smi   1
   bnz   tx8_stop
