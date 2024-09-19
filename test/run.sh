@@ -41,5 +41,5 @@ if [ -f "$input" ]; then
 fi
 cosmac_emu "${args[@]}"
 touch "$expect"
-diff "$expect" "$output"
+diff -u "$expect" "$output"
 rm "$output"
