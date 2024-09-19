@@ -25,10 +25,6 @@ main:
   out   4
   dec   R_SP
 
-  ; wait for input button
-wait1:
-  bn4   wait1
-
   mov   r8, EEPROM_DEST
   mov   r9, IMAGE_SIZE
   call  cksum8
@@ -37,10 +33,6 @@ wait1:
   sex   R_SP
   out   4
   dec   R_SP
-
-  ; wait for input button
-wait2:
-  bn4   wait2
 
   call  EEPROM_DEST 
 
