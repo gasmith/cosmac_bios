@@ -83,7 +83,7 @@ rx8_stop:
 rx8_done:
   retf
 
-; rx16: Bit-banged 8n1 transmit for more than 255 bytes.
+; rx16: Bit-banged 8n1 receive for more than 255 bytes.
 ;
 ; Arguments:
 ;   r8    rw  Buffer address
