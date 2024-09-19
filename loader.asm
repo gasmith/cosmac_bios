@@ -3,9 +3,13 @@
 ; This loader presumes that the serial line is running 8n1 at 9600 baud. Slower
 ; line rates can be accommodated by modifying the delay constant in r9.1.
 
+#ifndef LOADER_DEST_PAGE
+#define LOADER_DEST_PAGE
+#endif
+
 setup:
   ; Destination
-  ldi   1
+  ldi   LOADER_DEST_PAGE
   phi   r8
   ldi   0
   plo   r8
