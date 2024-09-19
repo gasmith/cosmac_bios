@@ -42,3 +42,4 @@ fi
 cosmac_emu "${args[@]}"
 touch "$expect"
 diff "$expect" "$output"
+rm "$output"

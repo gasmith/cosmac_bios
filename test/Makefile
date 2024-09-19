@@ -8,7 +8,7 @@ all: $(TARGETS:=.bin)
 test: $(TARGETS:=_test)
 
 clean:
-	rm -f *.bin *.build *.prg
+	rm -f *.bin *.build *.prg *-output.evlog
 
 %_test: %.bin
 	./run.sh -i $<
