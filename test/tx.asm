@@ -1,6 +1,6 @@
 #include inc/header.asm
 
-  mov   R_RA, main
+  mov  R_RA, main
   br   init_stack
 main:
   ; Source address
@@ -18,9 +18,10 @@ main:
   plo   r9
 
   call  tx8
+  idl
 
 data:
-  db "hello",0
+  db "hello"
 
 #include inc/stack.asm
 #include inc/tx.asm
