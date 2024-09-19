@@ -4,9 +4,13 @@
   mov   R_RA, main
   br    init_stack
 
-; A little test program to output a random byte on lines 1, 2, 3, 4, and 5, in
+; A little test program to output data on lines 1, 2, 3, 4, and 5, in
 ; that order, and then enter the idle loop.
 main:
+  ldi   0
+  phi   r8
+  ldi   data
+  plo   r8
   sex   r8
   out   1
   call  foo
@@ -26,5 +30,8 @@ bar:
   sex   r8
   out   3
   retf
+
+data:
+  db    "abcde"
 
 #include inc/stack.asm

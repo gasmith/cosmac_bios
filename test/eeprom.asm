@@ -1,7 +1,7 @@
 #include inc/header.asm
 
-#define IMAGE_BASE  00100h
-#define IMAGE_SIZE  00060h
+#define IMAGE_BASE  00130h
+#define IMAGE_SIZE  00046h
 
 #define EEPROM_DEST 08030h
 
@@ -70,3 +70,6 @@ demo_wait:
   sex   R_SP
   bz    demo_out
   br    demo_wait
+data:
+  db    "abcdefghijklmnopqrstuvwxyz"
+  db    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
