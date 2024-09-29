@@ -68,17 +68,15 @@ rx8_zero:
   sex   r8            ; 7 (no-op)
   bdf   rx8_next_bit  ; 8
 
+  ; Wait for EF3 to go high, signalling the stop bit.
+rx8_stop:
+  b3    rx8_stop
+
   ; Increment X, decrement byte count.
   irx
   dec   r9
   glo   r9
-  bz    rx8_done
-
-  ; If there are more bytes to receive, wait for EF3 to go high, signalling the
-  ; stop bit. Then receive the next byte.
-rx8_stop:
-  b3    rx8_stop 
-  br    rx8_loop
+  bnz   rx8_loop
 
 rx8_done:
   retf
@@ -93,13 +91,13 @@ rx8_done:
 ; See rx for more details.
 ;
 rx16:
-  ; If there's more than 255, send 255.
+  ; If there's more than 255, receive 255.
   ldi   0ffh
   plo   r9
   ghi   ra
   bnz   rx16_adjust_ra
 
-  ; If there's less than 256, send that.
+  ; If there's less than 256, receive that.
   glo   ra
   plo   r9
   bnz   rx16_adjust_ra
@@ -108,18 +106,28 @@ rx16:
 rx16_adjust_ra:
   ; Store length on the stack.
   sex   R_SP
+  glo   r9
   str   R_SP
   glo   ra
   sm        ; ra.0 - r9.0
   plo   ra
 
   ; If df=0, there was a borrow, so also decrement ra.1.
-  bdf   rx16_rx 
+  bdf   rx16_rx
   ghi   ra
   smi   1
   phi   ra
 
 rx16_rx:
-  ; Send this chunk, and loop for the next.
+  ; Stash the delay constant.
+  ghi   r9
+  stxd
+
+  ; Receive this chunk.
   call  rx8
+
+  ; Recover the delay constant.
+  irx
+  ldn   R_SP
+  phi   r9
   br    rx16
