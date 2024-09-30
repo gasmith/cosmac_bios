@@ -90,7 +90,7 @@ tx8_delay:
 tx8_stop:
   smi   1
   bnz   tx8_stop
-  
+
   ; If there's more to do, send the next byte.
   dec   r9            ; 2
   glo   r9            ; 3
@@ -124,18 +124,28 @@ tx16:
 tx16_adjust_ra:
   ; Store length on the stack.
   sex   R_SP
+  glo   r9
   str   R_SP
   glo   ra
   sm        ; ra.0 - r9.0
   plo   ra
 
   ; If df=0, there was a borrow, so also decrement ra.1.
-  bdf   tx16_tx 
+  bdf   tx16_tx
   ghi   ra
   smi   1
   phi   ra
 
 tx16_tx:
+  ; Stash the delay constant.
+  ghi   r9
+  stxd
+
   ; Send this chunk, and loop for the next.
   call  tx8
+
+  ; Recover the delay constant.
+  irx
+  ldn   R_SP
+  phi   r9
   br    tx16
