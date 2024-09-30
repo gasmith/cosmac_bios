@@ -88,6 +88,11 @@ rx8_done:
 ;   r9.1  rw  Delay constant
 ;   ra    rw  Buffer length
 ;
+; Currently only supports baud rates up to 2400, since we use
+; ~63 instructions from the point at which we sense the leading
+; edge of the stop bit, to the point at which we begin sensing
+; the next start-bit. That adds up to 252 us, or 3968 baud.
+;
 ; See rx for more details.
 ;
 rx16:

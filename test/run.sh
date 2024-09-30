@@ -6,7 +6,7 @@ usage() {
   echo "$0 usage:" && grep " .)\ #" "$0"
   exit "$1"
 }
-duration=100ms
+duration=5s
 while getopts "i:e:t:" arg; do
   case $arg in
   i) # Binary, required
