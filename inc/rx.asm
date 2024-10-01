@@ -5,8 +5,8 @@
 ;   r9.0  rw  Buffer length
 ;   r9.1  rw  Delay constant
 ;
-; Reads data from EF3 into the buffer. The baud rate is specified with a delay
-; constant, which is defined as 1e6/(8 * baud):
+; Reads data from EF3 into the buffer. Assumes that EF3 is inverted. The baud
+; rate is specified with a delay constant, which is defined as 1e6/(8 * baud):
 ;
 ;   baud  r9.1
 ;   ----  ----

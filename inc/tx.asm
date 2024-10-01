@@ -1,12 +1,12 @@
-; tx8: Big-banged 8n1 transmit.
+; tx8: Bit-banged 8n1 transmit.
 ;
 ; Arguments:
 ;   r8    rw  Buffer address
 ;   r9.0  rw  Buffer length
 ;   r9.1  rw  Delay constant
 ;
-; Writes buffer data to Q. The baud rate is specifed with a delay constant,
-; which is defined as 1e6/(8 * baud):
+; Writes buffer data to Q. Assumes that Q is inverted. The baud rate is specifed
+; with a delay constant, which is defined as 1e6/(8 * baud):
 ;
 ;   baud  r9.1
 ;   ----  ----
@@ -49,7 +49,7 @@ tx8_loop:
   ; Start bit.
   ghi   r9            ; 9
   sex   r8            ; 10 (padding)
-  req                 ; 1
+  seq                 ; 1
   br    tx8_delay     ; 2
 
   ; Decrement ra.0. Load the saved byte from ra.1, and shift the least
