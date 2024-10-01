@@ -48,6 +48,7 @@ cksum16_lo:
 
   ; XOR into the upper bit.
 cksum16_hi:
+  ghi   rf
   xor
   phi   rf
   irx
