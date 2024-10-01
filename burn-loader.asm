@@ -24,6 +24,7 @@ main:
   call  write_eeprom
 
   ; Compute the checksum, write to front panel, and idle.
+  ; The checksum should be 0x53.
   mov   r8, EEPROM_DEST
   mov   r9, IMAGE_SIZE
   call  cksum8

@@ -1,7 +1,8 @@
 ; A short bootstrap loader that can be toggled in.
 ;
-; This loader presumes that the serial line is running 8n1 at 9600 baud. Slower
-; line rates can be accommodated by modifying the delay constant in r9.1.
+; This loader presumes that the serial line is running 8n1 at 2400 baud. Other
+; line rates can be accommodated by modifying the delay constant in r9.1. Should
+; be stable up to 9600 baud.
 
 #ifndef LOADER_DEST_PAGE
 #define LOADER_DEST_PAGE
@@ -14,9 +15,9 @@ setup:
   ldi   0
   plo   r8
 
-  ; Delay constant for 9600 baud is 13 2-instr cycles. We'll use 8 instructions
-  ; for the PLL, so (13 - (8 / 2)) = 9.
-  ldi   9
+  ; Delay constant for 2400 baud is 52 2-instr cycles. We'll use 8 instructions
+  ; for the PLL, so (52 - (8 / 2)) = 48.
+  ldi   48
   phi   r9
 
 rx_loop:

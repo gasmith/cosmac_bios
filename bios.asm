@@ -26,4 +26,3 @@ f_strlen:        lbr  strlen
   org EEPROM_BASE+07ffch
 bios_version:    db   0, 1
 bios_cksum16:    db   0, 0
-
