@@ -1,4 +1,4 @@
-TARGETS := atoi div eeprom rx rx16 stack tx
+TARGETS := atoi div eeprom mul rx rx16 stack tx
 
 %.bin: %.asm inc/*.asm
 	asm02 -b $<
