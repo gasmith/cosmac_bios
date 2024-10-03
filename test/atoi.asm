@@ -66,5 +66,6 @@ h:
   db  "foo"
 
   org  0100h
+#include inc/div.asm
 #include inc/int.asm
 #include inc/stack.asm

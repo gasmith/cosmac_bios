@@ -111,15 +111,74 @@ atoi_done:
 
 ; itoa: Formats an integer into a null-terminated base-10 ASCII string.
 ;
-; TODO: Base-10 (needs div16)
 ; TODO: Base-16
 ;
 ; Arguments:
-;   r8    Buffer address
+;   r8    Buffer address (at least 7 characters long)
 ;   r9    Word
 ;   ra.0  1 if the integer is signed, else 0.
 ;
 ; Returns:
 ;   r8    First address after the null terminator.
 itoa:
-  idl
+  ; We need r8, r9, and ra for div16, so we need to shuffle a bit. Start by
+  ; determining whether this is a negative value. Store a 1 in rc.0 if it is
+  ; negative.
+  glo   ra
+  bz    itoa_sign
+  ghi   r9
+  ani   080h
+  bz    itoa_sign
+
+  ; It's negative. Time for two's complement.
+  ghi   r9
+  xri   0ffh
+  phi   r9
+  glo   r9
+  xri   0ffh
+  plo   r9
+  inc   r9
+  ldi   1
+itoa_sign:
+  plo   rc
+
+  ; Push a null terminator to the stack.
+  ldi   0
+  stxd
+
+  ; Make rb point to the buffer address, and move the word to r8 for div16.
+  mov   rb, r8
+  mov   r8, r9
+
+itoa_format:
+  ; Divide by 10, to get the remainder in r8, and the quotient in ra.
+  mov   r9, 10
+  call  div16
+
+  ; Get the character value, and push it to the stack.
+  glo   r8
+  adi   '0'
+  stxd
+
+  ; Move the quotient into r8, and check whether we're done.
+  mov   r8, ra
+  ghi   r8
+  bnz   itoa_format
+  glo   r8
+  bnz   itoa_format
+
+  ; If this is a negative number, push a '-' too.
+  glo   rc
+  bz    itoa_pop
+  ldi   '-'
+  stxd
+
+  ; Pop characters off the stack until we get to the null terminator.
+itoa_pop:
+  irx
+  ldn   R_SP
+  str   rb
+  inc   rb
+  bnz   itoa_pop
+
+  retf
