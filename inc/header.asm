@@ -2,16 +2,24 @@
 #define _COMMON_ASM_
 
 ; The call macro uses R_PC to read the address of the function to call.
-.op "CALL","W","D4 H1 L1"
-.op "RETF","","D5"
+.op "CALL","W","d4 H1 L1"
+.op "RETF","","d5"
 
 ; Convenience macros for moving words around.
-.op "MOV","NR","8$2 A$1 9$2 B$1"
-.op "MOV","NW","F8 L2 A$1 F8 H2 B$1"
+.op "MOV","NR","8$2 a$1 9$2 b$1"
+.op "MOV","NW","f8 L2 a$1 f8 H2 b$1"
 
-; The push & pop macros presume `X=R_SP`.
+; The push & pop macros presume `X=R_SP`, and big-endian word layout.
 .op "PUSH","R","8$1 73 9$1 73"
-.op "POP","R","60 72 B$1 F0 A$1"
+.op "POP","R","60 72 b$1 f0 a$1"
+
+; 16-bit arithmetic. Note that the 2-register variants use `M(X)` as
+; temporary storage.
+.op "ADD16","RR","8$2 52 $81 f4 a$1 9$2 52 9$1 74 b$1"
+.op "ADD16","RW","8$1 fc L2 a$1 9$1 7c H2 b$1"
+.op "SUB16","RR","8$2 52 8$1 f7 a$1 9$2 52 9$1 77 b$1"
+.op "SUB16","RW","8$1 ff L2 a$1 9$1 7f H2 b$1"
+.op "SHL16","R","8$1 fe a$1 9$1 7e b$1"
 
 ; Reserved registers, from the 1802 programming guide, which recommends the use
 ; of registers 2-6 as part of the "Standard call and return technique" (SCRT).
