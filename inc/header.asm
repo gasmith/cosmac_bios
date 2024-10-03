@@ -15,7 +15,7 @@
 
 ; 16-bit arithmetic. Note that the 2-register variants use `M(X)` as
 ; temporary storage.
-.op "ADD16","RR","8$2 52 $81 f4 a$1 9$2 52 9$1 74 b$1"
+.op "ADD16","RR","8$2 52 8$1 f4 a$1 9$2 52 9$1 74 b$1"
 .op "ADD16","RW","8$1 fc L2 a$1 9$1 7c H2 b$1"
 .op "SUB16","RR","8$2 52 8$1 f7 a$1 9$2 52 9$1 77 b$1"
 .op "SUB16","RW","8$1 ff L2 a$1 9$1 7f H2 b$1"

@@ -1,6 +1,6 @@
-TARGETS := atoi eeprom rx rx16 stack tx
+TARGETS := atoi div eeprom rx rx16 stack tx
 
-%.bin: %.asm
+%.bin: %.asm inc/*.asm
 	asm02 -b $<
 
 all: $(TARGETS:=.bin)

@@ -19,6 +19,9 @@ isnum_nope:
 
 ; atoi: Parses a base-10 integer from an ASCII string.
 ;
+; TODO: Base-16
+; TODO: Overflow
+;
 ; Arguments:
 ;   r8    Buffer address
 ;
@@ -105,3 +108,18 @@ atoi_done:
   ; Set DF=0 and return.
   adi   0
   retf
+
+; itoa: Formats an integer into a null-terminated base-10 ASCII string.
+;
+; TODO: Base-10 (needs div16)
+; TODO: Base-16
+;
+; Arguments:
+;   r8    Buffer address
+;   r9    Word
+;   ra.0  1 if the integer is signed, else 0.
+;
+; Returns:
+;   r8    First address after the null terminator.
+itoa:
+  idl
