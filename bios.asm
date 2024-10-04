@@ -1,5 +1,8 @@
 #include inc/header.asm
 
+  org EEPROM_BASE+07b00h
+#include inc/int.asm
+
   org EEPROM_BASE+07c00h
 #include inc/div.asm
 #include inc/mul.asm
@@ -7,11 +10,10 @@
   org EEPROM_BASE+07d00h
 #include inc/cksum.asm
 #include inc/eeprom.asm
-#include inc/int.asm
+#include inc/str.asm
 
   org EEPROM_BASE+07e00h
 #include inc/stack.asm
-#include inc/str.asm
 #include inc/rx.asm
 #include inc/tx.asm
 #include inc/tx_str.asm
@@ -27,6 +29,7 @@ f_tx8:            lbr   tx8
 f_tx16:           lbr   tx16
 f_tx16_str:       lbr   tx16_str
 f_strlen:         lbr   strlen
+f_strcmp:         lbr   strcmp
 f_isnum:          lbr   isnum
 f_atoi:           lbr   atoi
 f_itoa:           lbr   itoa

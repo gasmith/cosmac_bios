@@ -59,23 +59,11 @@ test:
   call  itoa
 
   ; Use rd=0 to signal a successful comparison. (TODO replace this with strcmp).
-  ldi   0
-  plo   rd
-
-  ; Compare the output buffer (r8) against the expectation (re), until we reach
-  ; the null terminator in re.
   mov   r8, buf
-  sex   r8
-cmp:
-  ldn   re
-  xor
-  bz    cmp_ok
-  inc   rd
-cmp_ok:
-  irx
-  ldn   re
-  inc   re
-  bnz   cmp
+  mov   r9, re
+  call  strcmp
+  bdf   output
+  retf
 
   glo   rd
   bnz   output
@@ -111,6 +99,7 @@ t7: db "0",0
   org  0200h
 #include inc/int.asm
 #include inc/div.asm
+#include inc/str.asm
 
   org  0300h
 #include inc/stack.asm

@@ -68,4 +68,5 @@ h:
   org  0100h
 #include inc/div.asm
 #include inc/int.asm
+  org  0200h
 #include inc/stack.asm
