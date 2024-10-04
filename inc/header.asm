@@ -11,6 +11,7 @@
 
 ; The push & pop macros presume `X=R_SP`, and big-endian word layout.
 .op "PUSH","R","8$1 73 9$1 73"
+.op "PUSH","W","f8 L1 73 f8 L2 73"
 .op "POP","R","60 72 b$1 f0 a$1"
 
 ; 16-bit arithmetic. Note that the 2-register variants use `M(X)` as

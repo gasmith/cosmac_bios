@@ -30,6 +30,7 @@ f_tx16:           lbr   tx16
 f_tx16_str:       lbr   tx16_str
 f_strlen:         lbr   strlen
 f_strcmp:         lbr   strcmp
+f_memcmp:         lbr   memcmp
 f_isnum:          lbr   isnum
 f_atoi:           lbr   atoi
 f_itoa:           lbr   itoa

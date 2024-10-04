@@ -39,3 +39,31 @@ strcmp_next:
   bnz   strcmp_loop
   adi   0
   retf
+
+; memcmp: Compare two sized buffers.
+;
+; Arguments:
+;   r8, r9  Buffers.
+;   ra      Buffer length.
+; Returns:
+;   r8, r9  Point to the first unmatched byte.
+;   ra      Unmatched characters.
+;   df=0    Memory is equal.
+memcmp:
+  sex   r8
+memcmp_loop:
+  ldn   r9
+  xor
+  bz    strcmp_next
+  smi   0
+  retf
+memcmp_next:
+  inc   r8
+  inc   r9
+  dec   ra
+  glo   ra
+  bnz   strcmp_loop
+  ghi   ra
+  bnz   strcmp_loop
+  adi   0
+  retf
