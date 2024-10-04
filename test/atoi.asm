@@ -4,44 +4,110 @@
   mov   R_RA, main
   lbr   init_stack
 main:
-  mov   rf, 0
+  ; rc.0 is testcase number
+  ldi   0
+  plo   rc
   mov   r8, a
-  call  test
-  mov   r8, b
-  call  test
-  mov   r8, c
-  call  test
-  mov   r8, d
-  call  test
-  mov   r8, e
-  call  test
-  mov   r8, f
-  call  test
-  mov   r8, g
-  call  test
-  mov   r8, h
+  mov   rd, 0
+  mov   re, 0
   call  test
 
-  ; Output rf.
-  glo   rf
-  str   R_SP
-  out   4
-  dec   R_SP
+  inc   rc
+  mov   r8, b
+  mov   rd, 0
+  mov   re, 9
+  call  test
+
+  inc   rc
+  mov   r8, c
+  mov   rd, 3
+  mov   re, 23
+  call  test
+
+  inc   rc
+  mov   r8, d
+  mov   rd, 0
+  mov   re, 0fe38h
+  call  test
+
+  inc   rc
+  mov   r8, e
+  mov   rd, 0
+  mov   re, 07fffh
+  call  test
+
+  inc   rc
+  mov   r8, f
+  mov   rd, 0
+  mov   re, 08000h
+  call  test
+
+  inc   rc
+  mov   r8, g
+  mov   rd, 0
+  mov   re, 0ffffh
+  call  test
+
+  inc   rc
+  mov   r8, h
+  mov   rd, 3
+  mov   re, 0
+  call  test
+
+  inc   rc
+  mov   r8, i
+  mov   rd, 0
+  mov   re, 0
+  call  test
+
   idl
 
 test:
+  push  rc
+  push  r8
+  call  strlen
+  pop   r8
+  mov   r9, rf
   call  atoi
+  pop   rc
 
-  ; Shift DF into rf.
-  glo   rf
-  shlc
-  plo   rf
-
-  ; Output the parsed integer, high byte first
-  glo   r9
-  stxd
-  ghi   r9
+  ; Compare unconsumed length.
+  glo   rd
   str   R_SP
+  glo   r9
+  xor
+  bnz   output
+
+  ; Compare parsed integer.
+  glo   re
+  str   R_SP
+  glo   ra
+  xor
+  ghi   re
+  str   R_SP
+  ghi   ra
+  xor
+  bnz   output
+
+  retf
+
+output:
+  ; Output the test case number.
+  glo   rc
+  sex   R_SP
+  str   R_SP
+  out   4
+  dec   R_SP
+
+  ; Output the unconsumed length, followed by the parsed integer, high byte
+  ; first.
+  glo   ra
+  stxd
+  ghi   ra
+  stxd
+  glo   r9
+  str   R_SP
+  out   4
   out   4
   out   4
   dec   R_SP
@@ -53,7 +119,7 @@ a:
 b:
   db  "9",0
 c:
-  db  "000023foo"
+  db  "000023foo",0
 d:
   db  "-456",0
 e:
@@ -63,10 +129,13 @@ f:
 g:
   db  "65535",0
 h:
-  db  "foo"
+  db  "foo",0
+i:
+  db  "-",0
 
-  org  0100h
+  org  0200h
 #include inc/div.asm
 #include inc/int.asm
-  org  0200h
+  org  0300h
+#include inc/str.asm
 #include inc/stack.asm

@@ -99,7 +99,7 @@ t7: db "0",0
   org  0200h
 #include inc/int.asm
 #include inc/div.asm
-#include inc/str.asm
 
   org  0300h
+#include inc/str.asm
 #include inc/stack.asm

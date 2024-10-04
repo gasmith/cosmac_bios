@@ -24,24 +24,42 @@ isnum_nope:
 ;
 ; Arguments:
 ;   r8    Buffer address
+;   r9    Buffer length
 ;
 ; Returns:
 ;   r8    Address of first non-numeric character
-;   r9    Parsed integer
-;   ra.0  1 if the integer is negative, else 0.
+;   r9    Unconsumed length
+;   ra    Parsed integer
+;   rb.0  1 if the integer is negative, else 0.
 ;   df=1  if first character is non-numeric
 atoi:
   ldi   0
-  plo   r9
-  phi   r9
-
-  ; If there's a leading minus sign, set ra.0=1.
   plo   ra
+  phi   ra
+  plo   rb
+
+  ; Zero-length buffer.
+  glo   r9
+  bnz   atoi_check_minus
+  ghi   r9
+  bnz   atoi_check_minus
+  smi   0
+  retf
+
+atoi_check_minus:
+  ; If there's a leading minus sign, set rb.0=1.
   ldn   r8
   xri   '-'
   bnz   atoi_check_numeric
-  inc   ra
+  inc   rb
   inc   r8
+  dec   r9
+  glo   r9
+  bnz   atoi_check_minus
+  ghi   r9
+  bnz   atoi_check_minus
+  smi   0
+  retf
 
   ; Check if first character is numeric.
 atoi_check_numeric:
@@ -56,53 +74,61 @@ atoi_loop:
   ; Load character and advance r8.
   lda   r8
 
-  ; Convert to binary and add to r9.
+  ; Convert to binary and add to ra.
   smi   '0'
   str   R_SP
-  glo   r9
+  glo   ra
   add
-  plo   r9
-  ghi   r9
+  plo   ra
+  ghi   ra
   adci  0
-  phi   r9
+  phi   ra
+
+  ; Check whether we've consumed the whole buffer.
+  dec   r9
+  glo   r9
+  bnz   atoi_check_next
+  ghi   r9
+  bz    atoi_negate
 
   ; Check whether the next character is numeric.
+atoi_check_next:
   ldn   r8
   plo   rc
   call  isnum
   bnf   atoi_negate
 
-  ; Multiply r9 by 10: Save a copy (in little-endian order), shift left twice
+  ; Multiply ra by 10: Save a copy (in little-endian order), shift left twice
   ; (x4), add the saved copy (x5), shift left again (x10).
-  ghi   r9
+  ghi   ra
   stxd
-  glo   r9
+  glo   ra
   str   R_SP
-  shl16 r9
-  shl16 r9
-  glo   r9
+  shl16 ra
+  shl16 ra
+  glo   ra
   add
-  plo   r9
+  plo   ra
   irx
-  ghi   r9
+  ghi   ra
   adc
-  phi   r9
-  shl16 r9
+  phi   ra
+  shl16 ra
   br    atoi_loop
 
 atoi_negate:
   ; Check whether we need to negate the result.
-  glo   ra
+  glo   rb
   bz    atoi_done
 
-  ; Set DF=1, then subtract 0 from r9.
+  ; Set DF=1, then subtract 0 from ra.
   smi   0
-  glo   r9
+  glo   ra
   sdbi  0
-  plo   r9
-  ghi   r9
+  plo   ra
+  ghi   ra
   sdbi  0
-  phi   r9
+  phi   ra
 
 atoi_done:
   ; Set DF=0 and return.
