@@ -8,6 +8,9 @@ demo_out:
   str   R_SP
   out   4
   dec   R_SP
+  adi   1
+  bnz   demo_wait
+  retf
 demo_wait:
   inc   r9
   glo   r9

@@ -88,6 +88,12 @@ def poke(serial: Serial, argv: list[str]):
         default=0,
         help="offset",
     )
+    ap.add_argument(
+        "-n",
+        "--size",
+        type=lambda v: int(v, 0),
+        help="length",
+    )
     try:
         args = ap.parse_args(argv[1:])
     except BaseException:
@@ -104,6 +110,8 @@ def poke(serial: Serial, argv: list[str]):
     elif args.file:
         with open(args.file, "rb") as fobj:
             data = fobj.read()[args.file_offset :]
+        if args.size != 0:
+            data = data[: args.size]
         addr = args.addr
         for chunk in chunked(data, 255):
             serial.write(struct.pack("!BHB", 2, addr, len(chunk)))

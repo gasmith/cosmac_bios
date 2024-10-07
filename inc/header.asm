@@ -37,6 +37,12 @@
 ; RAM code page where stack is located.
 #define STACK_PAGE  07fh
 
+; Serial delay constants.
+#define DELAY_9600   13
+#define DELAY_4800   26
+#define DELAY_2400   52
+#define DELAY_1200   105
+
 ; EEPROM constants
 #define EEPROM_BASE       08000h
 #define EEPROM_PAGE_SIZE  64

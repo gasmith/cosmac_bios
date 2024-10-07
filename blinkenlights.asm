@@ -1,8 +1,7 @@
 #include inc/header.asm
 
-  ldi   07fh
-  phi   R_SP
-  ldi   0
-  plo   R_SP
+  mov   R_RA, demo
+  lbr   init_stack
 
 #include inc/blinkenlights.asm
+#include inc/stack.asm

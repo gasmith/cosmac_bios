@@ -1,5 +1,8 @@
 #include inc/header.asm
 
+  org EEPROM_BASE+07a00h
+#include inc/minimon.asm
+
   org EEPROM_BASE+07b00h
 #include inc/int.asm
 
@@ -36,6 +39,7 @@ f_atoi:           lbr   atoi
 f_itoa:           lbr   itoa
 f_div16:          lbr   div16
 f_mul16:          lbr   mul16
+f_minimon:        lbr   minimon
 
   org EEPROM_BASE+07ffch
 bios_version:    db   0, 1
