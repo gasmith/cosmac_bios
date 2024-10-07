@@ -7,9 +7,17 @@ import os
 import shlex
 import sys
 import struct
+from enum import Enum
 from pathlib import Path
 from serial import Serial
 from typing import Generator
+
+
+class Command(Enum):
+    PEEK = 1
+    POKE = 2
+    EXEC = 3
+    PEEK_REG = 4
 
 
 class Reload(BaseException): ...
@@ -43,7 +51,7 @@ def peek(serial: Serial, argv: list[str]):
         args = ap.parse_args(argv[1:])
     except BaseException:
         return
-    serial.write(struct.pack("!BHB", 1, args.addr, args.size))
+    serial.write(struct.pack("!BHB", Command.PEEK, args.addr, args.size))
     serial.flush()
     data = serial.read(args.size)
     for ii, byte in enumerate(data):
@@ -105,7 +113,7 @@ def poke(serial: Serial, argv: list[str]):
         print("exactly one of --file or --value is required")
         return
     if args.data:
-        serial.write(struct.pack("!BHB", 2, args.addr, len(args.data)))
+        serial.write(struct.pack("!BHB", Command.POKE, args.addr, len(args.data)))
         serial.write(args.data)
     elif args.file:
         with open(args.file, "rb") as fobj:
@@ -130,7 +138,21 @@ def exec(serial: Serial, argv: list[str]):
         args = ap.parse_args(argv[1:])
     except BaseException:
         return
-    serial.write(struct.pack("!BH", 3, args.addr))
+    serial.write(struct.pack("!BH", Command.EXEC, args.addr))
+
+
+def peek_reg(serial: Serial, argv: list[str]):
+    ap = argparse.ArgumentParser("peekreg")
+    try:
+        _ = ap.parse_args(argv[1:])
+    except BaseException:
+        return
+    serial.write(struct.pack("!B", Command.PEEK_REG))
+    serial.flush()
+    data = serial.read(32)
+    reg = struct.unpack("!" + "H" * 16, data)
+    for ii, val in enumerate(reg):
+        sys.stdout.write(f"r{ii>>1}={val:02x}\n")
 
 
 def repl(serial: Serial):
@@ -157,13 +179,19 @@ def repl(serial: Serial):
                 return
             elif argv[0] == "reload":
                 raise Reload()
-            elif argv[0] in ("peek", "poke", "exec"):
+            elif argv[0] in (
+                "peek",
+                "peek_reg",
+                "poke",
+                "exec",
+            ):
                 globals()[argv[0]](serial, argv)
             elif argv[0] in ("?", "h", "help"):
                 print(
                     "\n".join(
                         (
                             "peek ADDR [-n SIZE]: read data",
+                            "peek_reg",
                             "poke ADDR (-f FILE | -d DATA): write data",
                             "exec ADDR: call a subroutine",
                             "reload: reload the cli",
