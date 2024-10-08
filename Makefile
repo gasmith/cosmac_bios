@@ -1,4 +1,4 @@
-TARGETS := bios loader minimon
+TARGETS := bios blinkenlights loader minimon
 
 all: $(TARGETS:=.bin) stage1.bin
 

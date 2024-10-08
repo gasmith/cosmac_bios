@@ -51,7 +51,7 @@ def peek(serial: Serial, argv: list[str]):
         args = ap.parse_args(argv[1:])
     except BaseException:
         return
-    serial.write(struct.pack("!BHB", Command.PEEK, args.addr, args.size))
+    serial.write(struct.pack("!BHB", Command.PEEK.value, args.addr, args.size))
     serial.flush()
     data = serial.read(args.size)
     for ii, byte in enumerate(data):
@@ -113,7 +113,7 @@ def poke(serial: Serial, argv: list[str]):
         print("exactly one of --file or --value is required")
         return
     if args.data:
-        serial.write(struct.pack("!BHB", Command.POKE, args.addr, len(args.data)))
+        serial.write(struct.pack("!BHB", Command.POKE.value, args.addr, len(args.data)))
         serial.write(args.data)
     elif args.file:
         with open(args.file, "rb") as fobj:
@@ -138,7 +138,7 @@ def exec(serial: Serial, argv: list[str]):
         args = ap.parse_args(argv[1:])
     except BaseException:
         return
-    serial.write(struct.pack("!BH", Command.EXEC, args.addr))
+    serial.write(struct.pack("!BH", Command.EXEC.value, args.addr))
 
 
 def peek_reg(serial: Serial, argv: list[str]):
@@ -147,12 +147,12 @@ def peek_reg(serial: Serial, argv: list[str]):
         _ = ap.parse_args(argv[1:])
     except BaseException:
         return
-    serial.write(struct.pack("!B", Command.PEEK_REG))
+    serial.write(struct.pack("!B", Command.PEEK_REG.value))
     serial.flush()
     data = serial.read(32)
     reg = struct.unpack("!" + "H" * 16, data)
     for ii, val in enumerate(reg):
-        sys.stdout.write(f"r{ii>>1}={val:02x}\n")
+        sys.stdout.write(f"r{ii:x}={val:04x}\n")
 
 
 def repl(serial: Serial):
@@ -230,4 +230,5 @@ def main():
         os.execvp("python", ["python"] + sys.argv)
 
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
