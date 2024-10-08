@@ -3,7 +3,7 @@ TARGETS := bios blinkenlights loader minimon
 all: $(TARGETS:=.bin) stage1.bin
 
 clean:
-	rm -f *.bin *.build *.prg
+	rm -rf *.bin *.build *.prg *.cksum __pycache__
 
 .PHONY: all clean
 

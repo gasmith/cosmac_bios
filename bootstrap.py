@@ -66,7 +66,7 @@ def burn(serial: Serial, burn_loader: bool, burn_bios: bool):
 def main():
     args = parse_args()
     with Serial(str(args.dev), args.baud) as serial:
-        time.sleep(1)
+        input("Press enter when ready")
         if args.command == "load":
             load(serial, args.image, args.image_offset)
         elif args.command == "burn":

@@ -1,18 +1,16 @@
 #include inc/header.asm
 
-  org EEPROM_BASE+07a00h
+  org EEPROM_BASE+07b00h
 #include inc/minimon.asm
 
-  org EEPROM_BASE+07b00h
-#include inc/int.asm
-
   org EEPROM_BASE+07c00h
-#include inc/div.asm
-#include inc/mul.asm
+#include inc/int.asm
 
   org EEPROM_BASE+07d00h
 #include inc/cksum.asm
+#include inc/div.asm
 #include inc/eeprom.asm
+#include inc/mul.asm
 #include inc/str.asm
 
   org EEPROM_BASE+07e00h
