@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-import atexit
 import argparse
-import readline
+import atexit
 import os
+import readline
 import shlex
-import sys
 import struct
+import sys
 from enum import Enum
 from pathlib import Path
-from serial import Serial
 from typing import Generator
+
+from serial import Serial
 
 
 class Command(Enum):

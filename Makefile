@@ -11,7 +11,7 @@ clean:
 	asm02 -b $<
 
 %.cksum: %.bin
-	./cksum.py $< -o $@
+	uv --project scripts run scripts/cksum.py $< -o $@
 
 bios-stamped.bin: bios.bin bios.cksum
 	cp bios.bin $@

@@ -5,7 +5,9 @@ import struct
 import sys
 import time
 from pathlib import Path
+
 from serial import Serial
+
 from minimon import Command
 
 
