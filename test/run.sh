@@ -30,8 +30,9 @@ output=$base-output.evlog
 expect=$base-expect.evlog
 input=$base-input.evlog
 args=(
-  "--image" "$image"
-  "--run-duration" "$duration"
+  "run"
+  "--ram" "$image"
+  "--duration" "$duration"
   "--output-events" "$output"
 )
 if [ -f "$input" ]; then
